@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque Fácil - Controle Total para sua Adega</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset e configurações básicas */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* Container centralizado */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                padding: 0 2rem;
+            }
+        }
+
+        /* Configuração do Tailwind para cores personalizadas */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --info-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        /* Animações suaves */
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Header moderno com glassmorphism */
+        .modern-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            width: 100%;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .header-content {
+                padding: 0 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .header-content {
+                padding: 0 2rem;
+            }
+        }
+
+        /* Logo e navegação */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            background: var(--primary-gradient);
+            padding: 0.5rem;
+            border-radius: 12px;
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (min-width: 768px) {
+            .logo-text {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Navegação */
+        .nav-desktop {
+            display: none;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .nav-desktop {
+                display: flex;
+            }
+        }
+
+        .nav-link {
+            position: relative;
+            color: #374151;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Botões modernos */
+        .modern-btn {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        @media (min-width: 768px) {
+            .modern-btn {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+        }
+
+        .modern-btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .modern-btn.secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .modern-btn.secondary:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .modern-btn.success {
+            background: var(--success-gradient);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .modern-btn.success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Hero section moderna */
+        .hero-section {
+            background: var(--primary-gradient);
+            position: relative;
+            overflow: hidden;
+            padding: 5rem 0;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .hero-section {
+                padding: 6rem 0;
+            }
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        @media (min-width: 640px) {
+            .hero-content {
+                padding: 0 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 4rem;
+                padding: 0 2rem;
+            }
+        }
+
+        /* Elementos flutuantes */
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 1;
+        }
+
+        .floating-1 {
+            width: 60px;
+            height: 60px;
+            top: 10%;
+            left: 5%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .floating-2 {
+            width: 80px;
+            height: 80px;
+            top: 60%;
+            right: 10%;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+
+        .floating-3 {
+            width: 40px;
+            height: 40px;
+            bottom: 20%;
+            left: 15%;
+            animation: float 7s ease-in-out infinite;
+        }
+
+        @media (min-width: 768px) {
+            .floating-1 {
+                width: 80px;
+                height: 80px;
+                left: 10%;
+            }
+
+            .floating-2 {
+                width: 120px;
+                height: 120px;
+                right: 15%;
+            }
+
+            .floating-3 {
+                width: 60px;
+                height: 60px;
+                left: 20%;
+            }
+        }
+
+        /* Cards com glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Cards de métricas */
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .metric-card {
+                padding: 1.5rem;
+            }
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        /* Grid responsivo */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        @media (min-width: 640px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Seções com glassmorphism */
+        .section-glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5rem 0;
+            width: 100%;
+        }
+
+        .section-content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .section-content {
+                padding: 0 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .section-content {
+                padding: 0 2rem;
+            }
+        }
+
+        /* Testimonials modernos */
+        .testimonial-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .testimonial-card {
+                padding: 2rem;
+            }
+        }
+
+        .testimonial-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--success-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .testimonial-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border-color: #10b981;
+        }
+
+        /* Grid de testimonials */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .testimonials-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* CTA section moderna */
+        .cta-section {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 5rem 0;
+            width: 100%;
+        }
+
+        .cta-content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        @media (min-width: 640px) {
+            .cta-content {
+                padding: 0 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .cta-content {
+                padding: 0 2rem;
+            }
+        }
+
+        /* Footer moderno */
+        .modern-footer {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem 0;
+            width: 100%;
+        }
+
+        .footer-content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .footer-content {
+                padding: 0 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .footer-content {
+                padding: 0 2rem;
+            }
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .footer-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* Badge moderno */
+        .modern-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Dashboard preview moderno */
+        .dashboard-preview {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .dashboard-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .dashboard-preview:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Ícones flutuantes */
+        .floating-icon {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .floating-icon {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        .floating-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .floating-icon.success {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .floating-icon.primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+
+        /* Responsividade para textos */
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        @media (min-width: 768px) {
+            .hero-title {
+                font-size: 3.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .hero-title {
+                font-size: 4rem;
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        @media (min-width: 768px) {
+            .hero-subtitle {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Botões responsivos */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .btn-group {
+                flex-direction: row;
+                gap: 1rem;
+            }
+        }
+
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .features-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Utilitários de texto */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        .text-gray-600 {
+            color: #4b5563;
+        }
+
+        .text-gray-700 {
+            color: #374151;
+        }
+
+        .text-gray-900 {
+            color: #111827;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        /* Espaçamentos */
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-8 {
+            margin-bottom: 2rem;
+        }
+
+        .mb-16 {
+            margin-bottom: 4rem;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .mt-8 {
+            margin-top: 2rem;
+        }
+
+        .p-3 {
+            padding: 0.75rem;
+        }
+
+        .p-4 {
+            padding: 1rem;
+        }
+
+        .p-6 {
+            padding: 1.5rem;
+        }
+
+        .p-8 {
+            padding: 2rem;
+        }
+
+        /* Flexbox utilities */
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        /* Cores de fundo */
+        .bg-green-100 {
+            background-color: #dcfce7;
+        }
+
+        .bg-blue-100 {
+            background-color: #dbeafe;
+        }
+
+        .bg-purple-100 {
+            background-color: #f3e8ff;
+        }
+
+        .bg-yellow-50 {
+            background-color: #fefce8;
+        }
+
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+
+        /* Cores de texto */
+        .text-green-600 {
+            color: #16a34a;
+        }
+
+        .text-green-800 {
+            color: #166534;
+        }
+
+        .text-blue-600 {
+            color: #2563eb;
+        }
+
+        .text-purple-600 {
+            color: #9333ea;
+        }
+
+        .text-yellow-600 {
+            color: #ca8a04;
+        }
+
+        .text-yellow-400 {
+            color: #facc15;
+        }
+
+        .text-red-300 {
+            color: #fca5a5;
+        }
+
+        .text-blue-100 {
+            color: #dbeafe;
+        }
+
+        .text-blue-200 {
+            color: #bfdbfe;
+        }
+
+        .text-gray-400 {
+            color: #9ca3af;
+        }
+
+        /* Bordas */
+        .border-l-4 {
+            border-left-width: 4px;
+        }
+
+        .border-green-500 {
+            border-color: #22c55e;
+        }
+
+        .border-blue-500 {
+            border-color: #3b82f6;
+        }
+
+        .border-yellow-500 {
+            border-color: #eab308;
+        }
+
+        .border-t {
+            border-top-width: 1px;
+        }
+
+        .border-gray-700 {
+            border-color: #374151;
+        }
+
+        /* Rounded */
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .rounded-xl {
+            border-radius: 0.75rem;
+        }
+
+        /* Tamanhos */
+        .w-12 {
+            width: 3rem;
+        }
+
+        .h-12 {
+            height: 3rem;
+        }
+
+        .w-16 {
+            width: 4rem;
+        }
+
+        .h-16 {
+            height: 4rem;
+        }
+
+        .w-20 {
+            width: 5rem;
+        }
+
+        .h-20 {
+            height: 5rem;
+        }
+
+        /* Sombras */
+        .shadow-sm {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* Espaçamentos específicos */
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+
+        .space-x-8 > * + * {
+            margin-left: 2rem;
+        }
+
+        /* Transições */
+        .transition-colors {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+
+        /* Hidden utilities */
+        .hidden {
+            display: none;
+        }
+
+        @media (min-width: 640px) {
+            .sm\\:block {
+                display: block;
+            }
+        }
+
+        /* Overflow */
+        .overflow-hidden {
+            overflow: hidden;
+        }
+
+        /* Position */
+        .relative {
+            position: relative;
+        }
+
+        .absolute {
+            position: absolute;
+        }
+
+        /* Z-index */
+        .z-10 {
+            z-index: 10;
+        }
+
+        /* Max width */
+        .max-w-2xl {
+            max-width: 42rem;
+        }
+
+        .max-w-3xl {
+            max-width: 48rem;
+        }
+
+        .max-w-4xl {
+            max-width: 56rem;
+        }
+
+        /* Margin auto */
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mr-2 {
+            margin-right: 0.5rem;
+        }
+
+        .mr-3 {
+            margin-right: 0.75rem;
+        }
+
+        .mr-4 {
+            margin-right: 1rem;
+        }
+
+        .ml-2 {
+            margin-left: 0.5rem;
+        }
+
+        /* Leading */
+        .leading-relaxed {
+            line-height: 1.625;
+        }
+
+        /* Font sizes */
+        .text-xs {
+            font-size: 0.75rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+        }
+
+        .text-4xl {
+            font-size: 2.25rem;
+        }
+
+        /* Padding específicos */
+        .px-3 {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        .py-1 {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+
+        .py-5 {
+            padding-top: 1.25rem;
+            padding-bottom: 1.25rem;
+        }
+
+        .px-12 {
+            padding-left: 3rem;
+            padding-right: 3rem;
+        }
+
+        .pt-8 {
+            padding-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header moderno -->
+    <header class="modern-header animate-fade-in">
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-cube text-white text-xl"></i>
+                </div>
+                <span class="logo-text">Estoque Fácil</span>
+            </div>
+            <nav class="nav-desktop">
+                <a class="nav-link" href="index.html">Início</a>
+                <a class="nav-link" href="precos.html">Preços</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <a class="nav-link hidden sm:block" href="login.html">Entrar</a>
+                <a class="modern-btn" href="cadastro.html">
+                    <i class="fas fa-rocket"></i>
+                    Começar Grátis
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section Moderna -->
+        <section class="hero-section">
+            <!-- Elementos flutuantes -->
+            <div class="floating-element floating-1"></div>
+            <div class="floating-element floating-2"></div>
+            <div class="floating-element floating-3"></div>
+            
+            <div class="hero-content">
+                <div class="animate-slide-up">
+                    <div class="inline-flex items-center rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800">
+                        <i class="fas fa-trending-up mr-2"></i>
+                        <strong>+500 estabelecimentos já economizam R$ 2.000/mês</strong>
+                    </div>
+                    <h1 class="hero-title">
+                        Pare de <span class="text-red-300">perder dinheiro</span> com controle manual
+                    </h1>
+                    <p class="hero-subtitle">
+                        <strong>30% dos pequenos estabelecimentos</strong> perdem até R$ 1.500/mês por falta de controle. 
+                        O Estoque Fácil resolve isso em <strong>menos de 5 minutos</strong>.
+                    </p>
+                    
+                    <!-- Métricas em cards modernos -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="flex items-center">
+                                <div class="bg-green-100 p-3 rounded-full mr-3">
+                                    <i class="fas fa-dollar-sign text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">+40%</p>
+                                    <p class="text-sm text-gray-600">Margem de lucro</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="flex items-center">
+                                <div class="bg-blue-100 p-3 rounded-full mr-3">
+                                    <i class="fas fa-clock text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">2h/dia</p>
+                                    <p class="text-sm text-gray-600">Tempo economizado</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="flex items-center">
+                                <div class="bg-purple-100 p-3 rounded-full mr-3">
+                                    <i class="fas fa-shield-alt text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">Zero</p>
+                                    <p class="text-sm text-gray-600">Produtos vencidos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <a class="modern-btn success text-lg" href="cadastro.html">
+                            <i class="fas fa-rocket"></i>
+                            Começar GRÁTIS agora
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a class="modern-btn secondary text-lg" href="cadastro.html">
+                            <i class="fas fa-play"></i>
+                            Começar Teste Grátis
+                        </a>
+                    </div>
+                    <div class="text-sm text-blue-200 flex flex-wrap gap-4">
+                        <span class="flex items-center"><i class="fas fa-check mr-2"></i> Sem cartão de crédito</span>
+                        <span class="flex items-center"><i class="fas fa-check mr-2"></i> 50 produtos grátis</span>
+                        <span class="flex items-center"><i class="fas fa-check mr-2"></i> Suporte incluído</span>
+                    </div>
+                </div>
+                
+                <!-- Dashboard Preview Moderno -->
+                <div class="relative animate-scale-in">
+                    <div class="dashboard-preview">
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg p-4 mb-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-900 flex items-center">
+                                    <i class="fas fa-chart-line mr-2 text-blue-600"></i>
+                                    Dashboard - Hoje
+                                </h3>
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                                    <i class="fas fa-arrow-up mr-2"></i>
+                                    +R$ 1.247
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="glass-card p-3">
+                                    <p class="text-xl font-bold text-green-600">R$ 3.450</p>
+                                    <p class="text-sm text-gray-600">Faturamento</p>
+                                </div>
+                                <div class="glass-card p-3">
+                                    <p class="text-xl font-bold text-blue-600">127</p>
+                                    <p class="text-sm text-gray-600">Produtos vendidos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
+                                <span class="text-sm font-medium">Cerveja Skol 350ml</span>
+                                <span class="text-sm font-bold text-green-600">+R$ 180</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                                <span class="text-sm font-medium">Refrigerante Coca 2L</span>
+                                <span class="text-sm font-bold text-green-600">+R$ 205</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                                <span class="text-sm font-medium flex items-center">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                                    Cigarro Marlboro
+                                </span>
+                                <span class="text-sm font-medium text-yellow-600">Estoque baixo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ícones flutuantes -->
+                    <div class="floating-icon success animate-float absolute" style="top: -15px; right: -15px;">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="floating-icon primary animate-pulse-slow absolute" style="bottom: -15px; left: -15px;">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Features Section Moderna -->
+        <section class="section-glass">
+            <div class="section-content">
+                <div class="text-center mb-16 animate-fade-in">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                        Por que escolher o Estoque Fácil?
+                    </h2>
+                    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                        Desenvolvido especificamente para adegas, mercearias e tabacarias
+                    </p>
+                </div>
+                <div class="features-grid">
+                    <div class="glass-card p-8 text-center animate-slide-up">
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-cube text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Controle de Estoque Inteligente</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Cadastre seus produtos, monitore quantidades e receba alertas quando o estoque estiver baixo.
+                        </p>
+                    </div>
+                    <div class="glass-card p-8 text-center animate-slide-up">
+                        <div class="bg-gradient-to-r from-green-600 to-green-700 w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-clock text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Registro de Vendas Rápido</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Registre suas vendas em segundos e mantenha seu estoque sempre atualizado automaticamente.
+                        </p>
+                    </div>
+                    <div class="glass-card p-8 text-center animate-slide-up">
+                        <div class="bg-gradient-to-r from-purple-600 to-purple-700 w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Relatórios que Ajudam a Vender Mais</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Descubra seus produtos mais lucrativos e otimize suas vendas com relatórios detalhados.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section Moderna -->
+        <section style="padding: 5rem 0; background: linear-gradient(135deg, #f9fafb 0%, #dbeafe 100%);">
+            <div class="section-content">
+                <div class="text-center mb-16 animate-fade-in">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                        O que nossos clientes dizem
+                    </h2>
+                    <p class="text-xl text-gray-600">Resultados reais de quem já transformou seu negócio</p>
+                </div>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card animate-slide-up">
+                        <div class="modern-badge mb-4" style="background: rgba(16, 185, 129, 0.1); color: #059669;">
+                            <i class="fas fa-store"></i>
+                            Adega • São Paulo
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 mb-6 leading-relaxed">
+                            "Em 2 meses, <strong>aumentei o lucro em R$ 1.800/mês</strong>. Descobri que cerveja long neck dá 60% mais margem que lata. Agora foco nela!"
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-white font-bold">MS</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900">Maria Santos</p>
+                                <p class="text-gray-600 text-sm">Adega da Maria • 15 anos no ramo</p>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                            <p class="text-green-800 font-bold text-center">
+                                <i class="fas fa-coins mr-2"></i>
+                                +R$ 1.800/mês de lucro extra
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card animate-slide-up">
+                        <div class="modern-badge mb-4" style="background: rgba(59, 130, 246, 0.1); color: #1d4ed8;">
+                            <i class="fas fa-shopping-basket"></i>
+                            Mercearia • Rio de Janeiro
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 mb-6 leading-relaxed">
+                            "Parei de perder R$ 600/mês em produtos vencidos. Os alertas por email salvaram meu negócio. <strong>Economizo 2h por dia</strong> que antes gastava com planilhas."
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-white font-bold">JS</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900">João Silva</p>
+                                <p class="text-gray-600 text-sm">Mercearia do João • 8 anos no ramo</p>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                            <p class="text-green-800 font-bold text-center">
+                                <i class="fas fa-coins mr-2"></i>
+                                R$ 600/mês economizados + 2h/dia
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card animate-slide-up">
+                        <div class="modern-badge mb-4" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">
+                            <i class="fas fa-smoking"></i>
+                            Tabacaria • Belo Horizonte
+                        </div>
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 mb-6 leading-relaxed">
+                            "Descobri que isqueiro dá mais lucro que cigarro! <strong>Mudei o foco e aumentei a margem em 40%</strong>. Nunca mais fico sem produto que vende."
+                        </p>
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center mr-4">
+                                <span class="text-white font-bold">AL</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900">Ana Lima</p>
+                                <p class="text-gray-600 text-sm">Tabacaria Central • 12 anos no ramo</p>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                            <p class="text-green-800 font-bold text-center">
+                                <i class="fas fa-coins mr-2"></i>
+                                +40% de margem = R$ 950/mês extra
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section Moderna -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <div class="modern-badge mb-8" style="background: rgba(245, 158, 11, 0.2); color: #d97706; border-color: rgba(245, 158, 11, 0.3);">
+                    <i class="fas fa-bolt"></i>
+                    ÚLTIMAS 48 HORAS: 50% OFF no primeiro mês
+                </div>
+                <h2 class="text-4xl font-bold text-white mb-6 animate-fade-in">
+                    Pare de perder R$ 1.500/mês
+                </h2>
+                <p class="text-xl text-blue-100 mb-4 max-w-3xl mx-auto animate-slide-up">
+                    <strong>Comece GRÁTIS agora</strong> e veja seu lucro aumentar em 7 dias
+                </p>
+                <p class="text-lg text-blue-200 mb-8 max-w-2xl mx-auto">
+                    Sem cartão de crédito • Sem compromisso • Suporte incluído
+                </p>
+                
+                <div class="glass-card p-8 max-w-4xl mx-auto animate-scale-in">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center justify-center">
+                            <i class="fas fa-rocket mr-3 text-blue-600"></i>
+                            Comece a Lucrar em Minutos
+                        </h3>
+                        <p class="text-gray-600 text-lg">
+                            Nossa plataforma é desenhada para te dar resultados visíveis desde o primeiro dia de uso.
+                        </p>
+                    </div>
+                    
+                    <div class="features-grid mb-8">
+                        <div class="metric-card text-center">
+                            <div class="bg-green-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-dollar-sign text-green-600 text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 mb-2">Economize R$ 2.200/mês</h4>
+                            <p class="text-gray-600 text-sm">Pare de perder dinheiro com controle manual</p>
+                        </div>
+                        <div class="metric-card text-center">
+                            <div class="bg-blue-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-clock text-blue-600 text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 mb-2">2 horas/dia livres</h4>
+                            <p class="text-gray-600 text-sm">Automatize tarefas repetitivas</p>
+                        </div>
+                        <div class="metric-card text-center">
+                            <div class="bg-purple-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 mb-2">+40% de margem</h4>
+                            <p class="text-gray-600 text-sm">Foque nos produtos que mais lucram</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a class="modern-btn success text-xl px-12 py-5 mb-6" href="cadastro.html">
+                            <i class="fas fa-rocket"></i>
+                            COMEÇAR GRÁTIS AGORA
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <div class="text-gray-600 text-sm mb-6">
+                            <div class="flex flex-wrap items-center justify-center gap-4">
+                                <span class="flex items-center"><i class="fas fa-check mr-2"></i> 7 dias grátis do Premium</span>
+                                <span class="flex items-center"><i class="fas fa-check mr-2"></i> 50% OFF primeiro mês</span>
+                                <span class="flex items-center"><i class="fas fa-check mr-2"></i> Cancele quando quiser</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
+                            <div class="flex items-center">
+                                <i class="fas fa-shield-alt mr-2"></i>
+                                Dados seguros
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-users mr-2"></i>
+                                +500 clientes
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-star mr-2 text-yellow-400"></i>
+                                4.9/5 estrelas
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer Moderno -->
+    <footer class="modern-footer text-white">
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-xl mr-3">
+                            <i class="fas fa-cube text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold">Estoque Fácil</span>
+                    </div>
+                    <p class="text-gray-400 leading-relaxed">
+                        A solução completa para gestão de estoque e vendas de pequenos estabelecimentos.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Produto</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a class="hover:text-white transition-colors" href="#">Funcionalidades</a></li>
+                        <li><a class="hover:text-white transition-colors" href="precos.html">Preços</a></li>
+                        <li><a class="hover:text-white transition-colors" href="#">Atualizações</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Suporte</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a class="hover:text-white transition-colors" href="#">Central de Ajuda</a></li>
+                        <li><a class="hover:text-white transition-colors" href="#">Tutoriais</a></li>
+                        <li><a class="hover:text-white transition-colors" href="#">Contato</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a class="hover:text-white transition-colors" href="#">Termos de Uso</a></li>
+                        <li><a class="hover:text-white transition-colors" href="#">Privacidade</a></li>
+                        <li><a class="hover:text-white transition-colors" href="#">Cookies</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2025 Estoque Fácil. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Animações suaves ao scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observar elementos para animação
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedElements = document.querySelectorAll('.animate-slide-up, .animate-fade-in, .animate-scale-in');
+            animatedElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                observer.observe(el);
+            });
+        });
+
+        // Efeito parallax suave
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.floating-element');
+            
+            parallaxElements.forEach((element, index) => {
+                const speed = 0.5 + (index * 0.1);
+                element.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Smooth scroll para links internos
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

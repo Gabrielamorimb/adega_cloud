@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha - Estoque Fácil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-slate-100">
+    <div class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="mb-8">
+            <a href="index.html" class="flex items-center text-3xl font-bold text-slate-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-10 w-10 text-blue-700 mr-3"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+                <span>Estoque Fácil</span>
+            </a>
+        </div>
+
+        <div id="form-container" class="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Crie sua nova senha</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Digite e confirme sua nova senha de acesso abaixo.
+                </p>
+            </div>
+            
+            <form id="update-password-form" class="mt-8 space-y-6">
+                <div>
+                    <label for="new-password" class="sr-only">Nova Senha</label>
+                    <input id="new-password" name="password" type="password" required placeholder="Digite a nova senha (mínimo 6 caracteres)" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                 <div>
+                    <label for="confirm-password" class="sr-only">Confirmar Nova Senha</label>
+                    <input id="confirm-password" name="confirm-password" type="password" required placeholder="Confirme a nova senha" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Salvar Nova Senha
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="success-message" class="hidden text-center mt-8 p-8 w-full max-w-md">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Senha redefinida com sucesso!</h3>
+            <p class="mt-2 text-sm text-gray-600">
+                Você já pode usar sua nova senha para acessar o sistema.
+            </p>
+            <a href="login.html" class="mt-4 inline-block bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700">Ir para o Login</a>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://urffzwmchbbeddpanopp.supabase.co';
+        const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_AQUI'; // <-- INSIRA SUA CHAVE AQUI
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const form = document.getElementById('update-password-form');
+        const formContainer = document.getElementById('form-container');
+        const successMessage = document.getElementById('success-message');
+
+        // Esta função "ouve" o evento de recuperação de senha
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            // Se o evento for PASSWORD_RECOVERY, significa que o usuário chegou aqui pelo link do e-mail
+            if (event === "PASSWORD_RECOVERY") {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const newPassword = form.querySelector('#new-password').value;
+                    const confirmPassword = form.querySelector('#confirm-password').value;
+                    const button = form.querySelector('button');
+
+                    if (newPassword.length < 6) { alert('A senha precisa ter no mínimo 6 caracteres.'); return; }
+                    if (newPassword !== confirmPassword) { alert('As senhas não coincidem!'); return; }
+                    
+                    button.disabled = true;
+                    button.textContent = 'Salvando...';
+
+                    // Usa a sessão atual (do link) para atualizar a senha do usuário
+                    const { error } = await supabaseClient.auth.updateUser({
+                        password: newPassword
+                    });
+
+                    if (error) {
+                        alert("Erro ao redefinir a senha: " + error.message);
+                        button.disabled = false;
+                        button.textContent = 'Salvar Nova Senha';
+                    } else {
+                        formContainer.classList.add('hidden');
+                        successMessage.classList.remove('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
