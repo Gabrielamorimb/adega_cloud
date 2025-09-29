@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolha seu Plano - Estoque Fácil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos básicos e responsividade */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .main-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .user-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 1rem 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #1e40af;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .plans-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .plans-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .plan-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .plan-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .plan-card.popular {
+            border: 2px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .plan-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-period {
+            color: #6b7280;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .savings-highlight {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .features-list {
+            text-align: left;
+            margin-bottom: 2.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: #374151;
+            font-size: 1rem;
+        }
+
+        .feature-icon {
+            color: #10b981;
+            font-size: 1.25rem;
+        }
+
+        .plan-button {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 1.25rem 2rem;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.125rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .plan-button:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
+        }
+
+        .plan-button.annual {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .plan-button.annual:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .guarantee-section {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .guarantee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .guarantee-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .guarantee-icon {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 1rem;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+
+        .guarantee-icon i {
+            color: #3b82f6;
+            font-size: 2rem;
+        }
+
+        .guarantee-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .guarantee-text {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 640px) {
+            .main-title {
+                font-size: 2.25rem;
+            }
+            
+            .plan-card {
+                padding: 2rem;
+            }
+            
+            .plan-price {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="main-title">Escolha seu Plano</h1>
+            <p class="subtitle">Continue aproveitando todas as funcionalidades do Estoque Fácil</p>
+            
+            <!-- Informações do usuário (se disponível) -->
+            <div id="user-info" class="user-info" style="display: none;">
+                <i class="fas fa-user"></i>
+                <span id="user-email"></span>
+            </div>
+        </div>
+
+        <!-- Planos -->
+        <div class="plans-container">
+            <!-- Plano Mensal -->
+            <div class="plan-card">
+                <h3 class="plan-title">Premium Mensal</h3>
+                <div class="plan-price">R$ 39<span style="font-size: 1.5rem;">,90</span></div>
+                <div class="plan-period">por mês</div>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Produtos e vendas ilimitados</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Relatórios avançados de lucratividade</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Alertas automáticos de estoque baixo</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Suporte prioritário via WhatsApp</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Exportação de relatórios (CSV/PDF)</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Backup automático dos dados</span>
+                    </div>
+                </div>
+                
+                <button onclick="selectPlan('mensal', 39.90)" class="plan-button">
+                    <i class="fas fa-credit-card"></i>
+                    Assinar Plano Mensal
+                </button>
+            </div>
+
+            <!-- Plano Anual -->
+            <div class="plan-card popular">
+                <div class="popular-badge">🔥 Mais Popular</div>
+                
+                <h3 class="plan-title">Premium Anual</h3>
+                <div class="plan-price">R$ 399<span style="font-size: 1.5rem;">,00</span></div>
+                <div class="plan-period">por ano</div>
+                
+                <div class="savings-highlight">
+                    💰 Economize R$ 79,80 por ano!
+                </div>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span><strong>Tudo do plano mensal</strong></span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span><strong>2 meses grátis (economia de R$ 79,80)</strong></span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Suporte premium com resposta em até 2h</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Acesso antecipado a novas funcionalidades</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check feature-icon"></i>
+                        <span>Garantia de reembolso de 30 dias</span>
+                    </div>
+                </div>
+                
+                <button onclick="selectPlan('anual', 399.00)" class="plan-button annual">
+                    <i class="fas fa-star"></i>
+                    Quero a Melhor Oferta
+                </button>
+            </div>
+        </div>
+
+        <!-- Seção de Garantias -->
+        <div class="guarantee-section">
+            <h2 style="font-size: 1.75rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem;">
+                Por que escolher o Estoque Fácil?
+            </h2>
+            
+            <div class="guarantee-grid">
+                <div class="guarantee-item">
+                    <div class="guarantee-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="guarantee-title">Sem Compromisso</div>
+                    <div class="guarantee-text">Cancele quando quiser, sem multas ou taxas adicionais</div>
+                </div>
+                
+                <div class="guarantee-item">
+                    <div class="guarantee-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="guarantee-title">Dados Seguros</div>
+                    <div class="guarantee-text">Seus dados protegidos com criptografia de nível bancário</div>
+                </div>
+                
+                <div class="guarantee-item">
+                    <div class="guarantee-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="guarantee-title">Suporte 24/7</div>
+                    <div class="guarantee-text">Nossa equipe está sempre pronta para ajudar você</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuração do Supabase
+        const SUPABASE_URL = 'https://urffzwmchbbeddpanopp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZmZ6d21jaGJiZWRkcGFub3BwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2NzE2MjcsImV4cCI6MjA2ODI0NzYyN30.OtBoVWqlFdoBeQx2-gYwzVPV2tALQ2xM6AK45kcpdQc';
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Função para selecionar plano e redirecionar para checkout
+        async function selectPlan(planType, price) {
+            let userEmail = '';
+            
+            // Primeiro, tenta obter o email da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromUrl = urlParams.get('email');
+            
+            if (emailFromUrl) {
+                userEmail = emailFromUrl;
+            } else {
+                // Se não tem email na URL, tenta obter do usuário logado
+                try {
+                    const { data: { user } } = await supabaseClient.auth.getUser();
+                    if (user) {
+                        userEmail = user.email;
+                    }
+                } catch (error) {
+                    console.error('Erro ao obter usuário:', error);
+                }
+            }
+            
+            // Redireciona para checkout com todos os dados
+            const checkoutUrl = `checkout.html?plan=${planType}&price=${price}&email=${encodeURIComponent(userEmail)}`;
+            window.location.href = checkoutUrl;
+        }
+
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userEmail = urlParams.get('email');
+            
+            // Se há email na URL, mostra as informações do usuário
+            if (userEmail) {
+                const userInfoDiv = document.getElementById('user-info');
+                const userEmailSpan = document.getElementById('user-email');
+                
+                userInfoDiv.style.display = 'inline-flex';
+                userEmailSpan.textContent = decodeURIComponent(userEmail);
+            }
+        });
+    </script>
+</body>
+
+</html>
+

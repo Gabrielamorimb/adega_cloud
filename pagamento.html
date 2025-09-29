@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assinatura Necessária - Estoque Fácil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos básicos e responsividade */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .icon-container {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .main-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            font-size: 1.125rem;
+            line-height: 1.6;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.125rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .action-button:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .contact-info {
+            margin-top: 2.5rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="icon-container">
+            <i class="fas fa-credit-card"></i>
+        </div>
+        <h2 id="welcome-message" class="main-title">Seu período de teste terminou.</h2>
+        <p class="subtitle">
+            Para continuar utilizando o Estoque Fácil e ter acesso a todas as funcionalidades,
+            por favor, assine um de nossos planos.
+        </p>
+        <a href="#" class="action-button">
+            <i class="fas fa-arrow-right"></i>
+            Escolher um Plano
+        </a>
+        <p class="contact-info">
+            Dúvidas? Entre em contato com nosso suporte: <a href="mailto:suporte@estoquefacil.com">suporte@estoquefacil.com</a>
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userEmail = urlParams.get('email');
+
+            const welcomeMessage = document.getElementById('welcome-message');
+            if (userEmail) {
+                welcomeMessage.innerHTML = `Olá, <span class="font-bold text-blue-700">${decodeURIComponent(userEmail)}</span>! Seu teste terminou.`;
+            }
+        });
+    </script>
+</body>
+
+</html>
+

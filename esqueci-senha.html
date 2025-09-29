@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - Estoque Fácil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-slate-100">
+    <div class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="mb-8">
+            <a href="index.html" class="flex items-center text-3xl font-bold text-slate-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-10 w-10 text-blue-700 mr-3"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+                <span>Estoque Fácil</span>
+            </a>
+        </div>
+
+        <div id="form-container" class="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Esqueceu sua senha?</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Sem problemas. Digite seu e-mail abaixo e enviaremos um link para você redefinir sua senha.
+                </p>
+            </div>
+            
+            <form id="reset-password-form" class="mt-8 space-y-6">
+                <div>
+                    <label for="email-address" class="sr-only">Seu e-mail</label>
+                    <input id="email-address" name="email" type="email" autocomplete="email" required placeholder="Digite seu e-mail de cadastro" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Enviar link de recuperação
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="success-message" class="hidden text-center mt-8 p-8 w-full max-w-md">
+             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Link enviado!</h3>
+            <p class="mt-2 text-sm text-gray-600">
+                Verifique sua caixa de entrada (e a pasta de spam) para encontrar o e-mail com o link para redefinir sua senha.
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://urffzwmchbbeddpanopp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZmZ6d21jaGJiZWRkcGFub3BwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2NzE2MjcsImV4cCI6MjA2ODI0NzYyN30.OtBoVWqlFdoBeQx2-gYwzVPV2tALQ2xM6AK45kcpdQc'; // <-- INSIRA SUA CHAVE AQUI
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const form = document.getElementById('reset-password-form');
+        const formContainer = document.getElementById('form-container');
+        const successMessage = document.getElementById('success-message');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const email = form.querySelector('#email-address').value;
+            const button = form.querySelector('button');
+
+            button.disabled = true;
+            button.textContent = 'Enviando...';
+
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/redefinir-senha.html' // A página que vamos criar depois
+            });
+
+            if (error) {
+                alert("Erro: " + error.message);
+                button.disabled = false;
+                button.textContent = 'Enviar link de recuperação';
+            } else {
+                // Esconde o formulário e mostra a mensagem de sucesso
+                formContainer.classList.add('hidden');
+                successMessage.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
