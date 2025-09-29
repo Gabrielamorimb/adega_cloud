@@ -125,26 +125,6 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-            padding: 1.5rem 2rem;
-            min-width: 300px;
-            max-width: 400px;
-            border-radius: 12px;
-            color: white;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .toast-modern.show {
-            opacity: 1;
-            visibility: visible;
         }
 
         /* Scrollbar personalizada */
@@ -388,16 +368,6 @@
 
         .product-row.low-stock:hover {
             background-color: #fee2e2; /* red-100 */
-        }
-
-        .product-row.highlight {
-            animation: highlight-fade 2s ease-out;
-        }
-
-        @keyframes highlight-fade {
-            0% { background-color: #dbeafe; } /* blue-100 */
-            50% { background-color: #93c5fd; } /* blue-300 */
-            100% { background-color: transparent; }
         }
 
         .text-low-stock {
@@ -1178,10 +1148,6 @@
 
     <!-- Toast notification moderna -->
     <div id="toast-notification" class="hidden fixed bottom-5 right-5 toast-modern text-white px-6 py-4 rounded-2xl shadow-2xl transform translate-y-20 opacity-0">
-        <div class="flex items-center mb-2">
-            <i id="toast-icon" class="text-2xl mr-3"></i>
-            <strong id="toast-title" class="text-lg font-bold"></strong>
-        </div>
         <p id="toast-message" class="font-medium"></p>
     </div>
 
@@ -1600,7 +1566,7 @@
 
                 // Obter URL pública da imagem
                 const { data: urlData } = supabaseClient.storage
-                    .from('imagens-produtos')
+                    .from('product-images')
                     .getPublicUrl(fileName);
 
                 return urlData.publicUrl;
@@ -1610,61 +1576,20 @@
             }
         }
 
-        // Função auxiliar para obter a classe do ícone do toast
-        function getToastIconClass(type) {
-            switch (type) {
-                case 'success':
-                    return 'fas fa-check-circle';
-                case 'error':
-                    return 'fas fa-times-circle';
-                case 'warning':
-                    return 'fas fa-exclamation-triangle';
-                default:
-                    return 'fas fa-info-circle';
-            }
-        }
-
         // Função para mostrar toast notification
-        function showToast(title, message, type = 'info') {
+        function showToast(message, type = 'info') {
             const toast = document.getElementById('toast-notification');
-            const toastTitle = toast.querySelector("#toast-title");
-            const toastMessage = toast.querySelector("#toast-message");
-            const toastIcon = toast.querySelector("#toast-icon");
-
-            // Limpar classes de tipo anteriores
-            toast.classList.remove('toast-success', 'toast-error', 'toast-warning', 'toast-info');
-
-            // Definir conteúdo e tipo
-            toast.querySelector("#toast-title").textContent = title;
-            toast.querySelector("#toast-message").textContent = message;
-            toast.querySelector("#toast-icon").className = getToastIconClass(type) + " mr-2";
-
-            switch (type) {
-                case 'success':
-
-                    toast.classList.add('toast-success');
-                    break;
-                case 'error':
-
-                    toast.classList.add('toast-error');
-                    break;
-                case 'warning':
-
-                    toast.classList.add('toast-warning');
-                    break;
-                default:
-
-                    toast.classList.add('toast-info');
-                    break;
-            }
-
-
-            // Mostrar toast
-            toast.classList.add('show');
-
-            // Esconder toast após 3 segundos
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
             setTimeout(() => {
-                toast.classList.remove('show');
+                toast.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 300);
             }, 3000);
         }
 
@@ -1742,31 +1667,6 @@
             hideModal(receiveProductModal, receiveProductModalContent);
         });
 
-        function showDuplicateProductModal(product) {
-            const modal = document.getElementById('duplicate-product-modal');
-            const content = document.getElementById('duplicate-product-modal-content');
-            const goToProductBtn = document.getElementById('go-to-product-btn');
-
-            goToProductBtn.onclick = () => {
-                hideModal(modal, content);
-                // Lógica para navegar até o produto
-                const productRow = document.querySelector(`[data-id="${product.id}"]`);
-                if (productRow) {
-                    productRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    productRow.classList.add('highlight');
-                    setTimeout(() => {
-                        productRow.classList.remove('highlight');
-                    }, 2000);
-                }
-            };
-
-            document.getElementById('cancel-duplicate-btn').onclick = () => {
-                hideModal(modal, content);
-            };
-
-            showModal(modal, content);
-        }
-
         // Event listener para o formulário de produto
         productForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1790,14 +1690,7 @@
 
             // Validar campos obrigatórios
             if (!nome || !preco_venda) {
-                showToast("Erro", "Por favor, preencha todos os campos obrigatórios.", "error");
-                return;
-            }
-
-            // Validar duplicidade de nome de produto
-            const existingProductByName = allProducts.find(p => p.nome.toLowerCase() === nome.toLowerCase() && p.id !== productId);
-            if (existingProductByName) {
-                showDuplicateProductModal(existingProductByName);
+                showToast('Por favor, preencha todos os campos obrigatórios.');
                 return;
             }
 
@@ -1854,11 +1747,11 @@
 
                 if (result.error) {
                     console.error('Erro ao salvar produto:', result.error);
-                    showToast("Erro", "Erro ao salvar produto. Tente novamente.", "error");
+                    showToast('Erro ao salvar produto. Tente novamente.');
                     return;
                 }
 
-                showToast("Sucesso", isEditMode ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!', "success");
+                showToast(isEditMode ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
                 hideModal(productModal, productModalContent);
                 
                 // Recarregar produtos e categorias
@@ -1867,25 +1760,9 @@
                 
             } catch (error) {
                 console.error('Erro ao salvar produto:', error);
-                showErrorModal("Erro ao salvar produto", "Ocorreu um erro inesperado ao tentar salvar o produto. Por favor, tente novamente. Se o problema persistir, entre em contato com o suporte.");
+                showToast('Erro ao salvar produto. Tente novamente.');
             }
         });
-
-        // Função para exibir o modal de erro
-        function showErrorModal(title, message) {
-            const errorModal = document.getElementById("error-modal");
-            const errorModalTitle = errorModal.querySelector("h3");
-            const errorModalMessage = errorModal.querySelector("p");
-            const closeErrorModalBtn = document.getElementById("close-error-modal-btn");
-
-            errorModalTitle.textContent = title;
-            errorModalMessage.textContent = message;
-            errorModal.classList.remove("hidden");
-
-            closeErrorModalBtn.onclick = () => {
-                errorModal.classList.add("hidden");
-            };
-        }
 
         // Event listener para botões de ação na tabela
         document.addEventListener('click', async (e) => {
@@ -2469,47 +2346,4 @@
     </script>
 </body>
 </html>
-
-
-
-
-<!-- Modal de Produto Duplicado -->
-<div id="duplicate-product-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in">
-    <div id="duplicate-product-modal-content" class="modal-content-modern active w-full max-w-md">
-        <div class="modal-header-modern">
-            <div class="flex items-center justify-center mb-4">
-                <i class="fas fa-exclamation-circle text-red-500 text-4xl mr-3"></i>
-                <h3 class="text-lg font-bold">Produto Duplicado Encontrado</h3>
-            </div>
-        </div>
-        <div class="p-6 text-center">
-            <p id="duplicate-message" class="mb-4">Já existe um produto com este nome. Deseja ir para o produto existente?</p>
-            <div class="flex justify-center gap-4 mt-6">
-                <button id="go-to-product-btn" class="btn-primary-modern">Sim, ir para o produto</button>
-                <button id="cancel-duplicate-btn" class="btn-secondary-modern">Não, cancelar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<!-- Error Modal -->
-<div id="error-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden animate-fade-in">
-    <div id="error-modal-content" class="modal-content-modern active w-full max-w-md">
-        <div class="modal-header-modern">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 bg-red-100 text-red-600 rounded-full mb-4">
-                <i class="fas fa-exclamation-triangle text-3xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-center">Erro</h3>
-        </div>
-        <div class="p-6 text-center">
-            <p id="error-message" class="mb-4">Ocorreu um erro inesperado.</p>
-            <div class="flex justify-center gap-4 mt-6">
-                <button id="close-error-modal-btn" class="btn-primary-modern">Fechar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 

@@ -865,402 +865,94 @@
         document.getElementById('logout-button').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
-        });        // FUNÇÃO ATUALIZADA PARA BUSCAR AS ÚLTIMAS 10 VENDAS COM DADOS DE DESCONTO E CÁLCULO DE LUCRO CORRETO
-        async function fetchRecentSales() {
-    try {
-        console.log('🔍 Buscando últimas 10 vendas com dados de desconto...');
-
-        const { data: sales, error: salesError } = await supabaseClient
-            .from('vendas')
-            .select(`
-                id,
-                valor_total,
-                desconto_aplicado,
-                tipo_desconto,
-                valor_desconto,
-                created_at,
-                itens_venda(
-                    quantidade,
-                    preco_unitario_na_venda,
-                    custo_unitario_na_venda,
-                    produtos!inner(
-                        id,
-                        nome,
-                        categoria,
-                        preco_custo,
-                        preco_venda,
-                        preco_venda_pacote,
-                        fator_conversao,
-                        codigo_sku_pacote
-                    )
-                )
-            `)
-            .order('created_at', { ascending: false })
-            .limit(10);
-
-        if (salesError) {
-            throw salesError;
-        }
-
-        const processedSales = [];
-
-        sales.forEach(sale => {
-            sale.itens_venda.forEach(item => {
-                const product = item.produtos;
-                if (!product) return;
-
-                const saleDate = new Date(sale.created_at);
-                const quantity = item.quantidade;
-                const unitPriceSold = item.preco_unitario_na_venda;
-                const unitCost = item.custo_unitario_na_venda;
-
-                let saleType = 'unit';
-                let originalUnitPrice = product.preco_venda;
-
-                if (product.fator_conversao && product.preco_venda_pacote && unitPriceSold.toFixed(2) === (product.preco_venda_pacote / product.fator_conversao).toFixed(2)) {
-                    saleType = 'package';
-                    originalUnitPrice = product.preco_venda_pacote / product.fator_conversao;
-                }
-
-                const itemDiscountProporcional = (originalUnitPrice - unitPriceSold) * quantity;
-                const itemRevenueLiquido = unitPriceSold * quantity;
-                const itemCostTotal = unitCost * quantity;
-                const itemProfit = itemRevenueLiquido - itemCostTotal;
-
-                processedSales.push({
-                    saleId: sale.id,
-                    saleDate: saleDate,
-                    productName: product.nome,
-                    category: product.categoria,
-                    saleType: saleType,
-                    quantity: quantity,
-                    unitPrice: unitPriceSold,
-                    itemDiscountProporcional: itemDiscountProporcional,
-                    itemRevenueLiquido: itemRevenueLiquido,
-                    itemProfit: itemProfit
-                });
-            });
         });
 
-        const sortedRecentSales = processedSales.sort((a, b) => b.saleDate.getTime() - a.saleDate.getTime());
-
-        return sortedRecentSales;
-
-    } catch (error) {
-        console.error('❌ Erro ao buscar últimas vendas:', error);
-        return [];
-    }
-}
-
-        // FUNÇÃO ATUALIZADA PARA RENDERIZAR AS ÚLTIMAS VENDAS COM NOVA ORDEM: PREÇO UNIT., DESCONTO, FATURAMENTO
-        function renderRecentSales(salesItems) {
-            const recentSalesEl = document.getElementById('recent-sales');
-            recentSalesEl.innerHTML = '';
-
-            if (salesItems.length === 0) {
-                recentSalesEl.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="empty-state">
-                            <i class="fas fa-history"></i>
-                            <p>Nenhuma venda recente encontrada</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            salesItems.forEach((item) => {
-                const formattedDate = item.saleDate.toLocaleDateString('pt-BR');
-                const formattedTime = item.saleDate.toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                const typeBadge = item.saleType === 'package'
-                    ? '<span class="type-badge-package"><i class="fas fa-boxes"></i>FARDO</span>'
-                    : '<span class="type-badge-unit"><i class="fas fa-cube"></i>UNIDADE</span>';
-
-                let discountBadge = '';
-                if (item.itemDiscountProporcional > 0) {
-                    discountBadge = `<span class="discount-badge"><i class="fas fa-tag"></i> ${formatCurrency(item.itemDiscountProporcional)}</span>`;
-                } else {
-                    discountBadge = '<span class="text-gray-400 text-xs">Sem desconto</span>';
-                }
-
-                const row = `
-                    <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div>
-                                <div class="text-sm font-semibold text-gray-900">${formattedDate}</div>
-                                <div class="text-xs text-gray-500">${formattedTime}</div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-semibold text-gray-900">${item.productName}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
-                                ${item.category}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            ${typeBadge}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
-                                ${item.quantity}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                            ${formatCurrency(item.unitPrice)}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            ${discountBadge}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                            ${formatCurrency(item.itemRevenueLiquido)}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${item.itemProfit >= 0 ? 'text-green-600' : 'text-red-600'}">
-                            ${formatCurrency(item.itemProfit)}
-                        </td>
-                    </tr>
-                `;
-                recentSalesEl.innerHTML += row;
-            });
-        }
-
-        // Main function to fetch and display data
-        async function fetchDashboardData(period = 'today') {
+        // FUNÇÃO ATUALIZADA PARA BUSCAR AS ÚLTIMAS 10 VENDAS COM DADOS DE DESCONTO E CÁLCULO DE LUCRO CORRETO
+                async function fetchRecentSales() {
             try {
-                let startDate = new Date();
-                const now = new Date();
-                if (period === 'today') {
-                    startDate.setHours(0, 0, 0, 0);
-                } else if (period === 'last7days') {
-                    startDate.setDate(now.getDate() - 6);
-                    startDate.setHours(0, 0, 0, 0);
-                } else if (period === 'this_month') {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                console.log('🔍 Buscando últimas 10 vendas com dados de desconto...');
+                
+                // Buscar as últimas 10 vendas com todos os detalhes necessários INCLUINDO DESCONTO
+                const { data: sales, error: salesError } = await supabaseClient
+                    .from('vendas')
+                    .select(`
+                        id,
+                        valor_total,
+                        desconto_aplicado,
+                        tipo_desconto,
+                        valor_desconto,
+                        created_at,
+                        itens_venda(
+                            quantidade,
+                            preco_unitario_na_venda,
+                            custo_unitario_na_venda,
+                            produtos(
+                                id,
+                                nome,
+                                categoria,
+                                preco_custo,
+                                preco_venda,
+                                preco_venda_pacote,
+                                fator_conversao,
+                                codigo_sku_pacote
+                            )
+                        )
+                    `)
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (salesError) {
+                    throw salesError;
                 }
 
-                const salesPromise = supabaseClient.from('vendas').select(`valor_total, desconto_aplicado, created_at, itens_venda(quantidade, custo_unitario_na_venda, produtos(nome))`).gte('created_at', startDate.toISOString());
-                const lowStockPromise = supabaseClient.rpc('get_low_stock_count');
-                const recentSalesPromise = fetchRecentSales(); // Usar nossa nova função com detecção de tipo E DESCONTO
+                console.log('📊 Vendas brutas recebidas:', sales);
 
-                const [salesResult, lowStockResult, recentSalesData] = await Promise.all([salesPromise, lowStockPromise, recentSalesPromise]);
-                const { data: sales, error: salesError } = salesResult;
-                const { data: lowStockCount, error: lowStockError } = lowStockResult;
+                // Processar as vendas para calcular lucro e faturamento líquido por item
+                const processedSales = sales.flatMap(sale => {
+                    const saleDate = new Date(sale.created_at);
+                    const totalOriginalValueSale = sale.itens_venda.reduce((sum, item) => sum + (item.quantidade * item.preco_unitario_na_venda), 0);
+                    
+                    // Calcular o fator de desconto aplicado à venda total
+                    const discountFactor = totalOriginalValueSale > 0 ? (sale.desconto_aplicado / totalOriginalValueSale) : 0;
 
-                if (salesError || lowStockError) {
-                    throw salesError || lowStockError;
-                }
+                    return sale.itens_venda.map(item => {
+                        const originalItemValue = item.quantidade * item.preco_unitario_na_venda;
+                        const itemDiscountProporcional = originalItemValue * discountFactor;
+                        const itemRevenueLiquido = originalItemValue - itemDiscountProporcional;
+                        const itemCost = (item.custo_unitario_na_venda || 0) * item.quantidade;
+                        const itemProfit = itemRevenueLiquido - itemCost;
 
-                // Calculations for KPIs
-                let totalRevenueLiquido = 0; // Faturamento líquido
-                let totalCost = 0;
-                const productSales = {};
-                sales.forEach(sale => {
-                    totalRevenueLiquido += sale.valor_total; // valor_total já é o líquido
-                    sale.itens_venda.forEach(item => {
-                        totalCost += (item.custo_unitario_na_venda || 0) * item.quantidade;
-                        if (item.produtos) {
-                            productSales[item.produtos.nome] = (productSales[item.produtos.nome] || 0) + item.quantidade;
+                        // Determinar o tipo de venda (unidade ou pacote)
+                        let saleType = 'unit';
+                        if (item.produtos.fator_conversao && item.produtos.fator_conversao > 1 && item.produtos.codigo_sku_pacote) {
+                            saleType = 'package';
                         }
+
+                        return {
+                            saleId: sale.id,
+                            saleDate: saleDate,
+                            productName: item.produtos.nome,
+                            category: item.produtos.categoria,
+                            quantity: item.quantidade,
+                            unitPrice: item.preco_unitario_na_venda,
+                            itemDiscountProporcional: itemDiscountProporcional,
+                            itemRevenueLiquido: itemRevenueLiquido,
+                            itemProfit: itemProfit,
+                            saleType: saleType
+                        };
                     });
                 });
 
-                const grossProfit = totalRevenueLiquido - totalCost; // Lucro bruto agora é lucro líquido
-                const profitMargin = totalRevenueLiquido > 0 ? (grossProfit / totalRevenueLiquido) * 100 : 0;
+                // As vendas já vêm ordenadas e limitadas pelo Supabase, então não precisamos reordenar ou fatiar aqui.
+                // No entanto, se houver múltiplos itens por venda, ainda precisamos garantir que estamos pegando os itens das últimas 10 vendas.
+                // A abordagem atual de `flatMap` já garante que todos os itens das 10 vendas mais recentes serão processados.
+                // Se o objetivo é ter 10 *linhas* na tabela, e não 10 *vendas*, a lógica precisaria ser ajustada para pegar os 10 últimos *itens* de venda.
+                // Considerando que o objetivo é exibir os itens das últimas 10 vendas, a lógica atual está correta após a adição do .order().limit().
 
-                // Update KPIs with animation
-                document.getElementById('faturamento-valor').textContent = formatCurrency(totalRevenueLiquido);
-                document.getElementById('lucro-valor').textContent = formatCurrency(grossProfit);
-                document.getElementById('margem-valor').textContent = `${profitMargin.toFixed(1).replace('.', ',')}%`;
-                document.getElementById('estoque-baixo-valor').textContent = lowStockCount || 0;
+                console.log('✅ Últimas 10 vendas processadas:', processedSales);
 
-                // Update sales chart
-                const salesByDate = {};
-                let dayCursor = new Date(startDate);
-                while (dayCursor <= now) {
-                    const label = dayCursor.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                    salesByDate[label] = 0;
-                    dayCursor.setDate(dayCursor.getDate() + 1);
-                }
-
-                sales.forEach(sale => {
-                    const saleDateLabel = new Date(sale.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                    if (salesByDate[saleDateLabel] !== undefined) {
-                        salesByDate[saleDateLabel] += sale.valor_total;
-                    }
-                });
-
-                salesChart.updateOptions({
-                    series: [{ data: Object.values(salesByDate) }],
-                    xaxis: { categories: Object.keys(salesByDate) }
-                });
-
-                // Update top products chart
-                const topProducts = Object.entries(productSales).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                topProductsChart.updateOptions({
-                    series: topProducts.length > 0 ? topProducts.map(p => p[1]) : [1],
-                    labels: topProducts.length > 0 ? topProducts.map(p => p[0]) : ['Nenhuma venda no período'],
-                });
-
-                // Render recent sales com os novos dados detalhados incluindo tipo E DESCONTO
-                renderRecentSales(recentSalesData);
-                
-                showToast('Dashboard atualizado com sucesso!', 'success');
-                
-            } catch (error) {
-                console.error("Erro ao carregar dados do dashboard:", error);
-                showToast('Erro ao carregar dados do dashboard.', 'error');
-            }
-        }
-
-        // Event listener for period filters
-        document.getElementById('period-filters').addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON' && !e.target.classList.contains('active')) {
-                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                fetchDashboardData(e.target.dataset.period);
-            }
-        });
-
-        // Event listener for low stock filter button
-        document.getElementById('low-stock-filter-btn').addEventListener('click', () => {
-            window.location.href = 'inventario.html?filtro=estoque_baixo';
-        });
-
-        // FUNÇÃO ATUALIZADA: Page initialization com busca de dados do plano
-        async function initializePage() {
-            currentUser = await checkLoginStatus();
-            if (currentUser) {
-                // Buscar dados do perfil e do plano
-                const planData = await fetchUserPlanData();
-                
-                // Exibir alerta do plano
-                displayPlanAlert(planData);
-                
-                // Atualizar mensagem de boas-vindas
-                if (planData && planData.full_name) {
-                    document.getElementById('welcome-message').innerHTML = `Olá, <span class="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">${planData.full_name.split(' ')[0]}</span>!`;
-                }
-                
-                // Inicializar dashboard
-                document.querySelector('.filter-btn[data-period="today"]').classList.add('active');
-                await fetchDashboardData('today');
-                document.getElementById('dashboard-content').classList.remove('opacity-0');
-            }
-        }
-
-        initializePage();
-    </script>
-</body>
-</html>
-
-
-                    .limit(20); // Buscar mais vendas para garantir que tenhamos 10 itens
-
-                if (salesError) throw salesError;
-
-                console.log('📊 Dados das últimas vendas recebidos:', { totalSales: sales?.length || 0, sales });
-
-                const recentSalesItems = [];
-
-                // Processar cada venda para extrair os itens
-                if (sales && Array.isArray(sales)) {
-                    sales.forEach((sale) => {
-                        // Validação da venda
-                        if (!sale || typeof sale.valor_total !== 'number') {
-                            console.warn('⚠️ Venda inválida:', sale);
-                            return;
-                        }
-
-                        const saleDiscount = Number(sale.desconto_aplicado) || 0; // Desconto total da venda
-                        const saleGrossTotal = sale.itens_venda.reduce((sum, saleItem) => {
-                            return sum + (Number(saleItem.quantidade) * Number(saleItem.preco_unitario_na_venda));
-                        }, 0); // Faturamento bruto total da venda
-
-                        // Processar itens da venda
-                        if (sale.itens_venda && Array.isArray(sale.itens_venda)) {
-                            sale.itens_venda.forEach((item) => {
-                                // Validação do item
-                                if (!item || !item.produtos) {
-                                    console.warn('⚠️ Item sem produto associado:', item);
-                                    return;
-                                }
-
-                                const product = item.produtos;
-                                
-                                // Validação do produto
-                                if (!product.id) {
-                                    console.warn('⚠️ Produto sem ID válido:', product);
-                                    return;
-                                }
-
-                                // Validação dos valores numéricos
-                                const quantidade = Number(item.quantidade) || 0;
-                                const precoUnitario = Number(item.preco_unitario_na_venda) || 0;
-                                const custoUnitario = Number(item.custo_unitario_na_venda) || Number(product.preco_custo) || 0;
-
-                                if (quantidade <= 0) {
-                                    console.warn('⚠️ Quantidade inválida:', quantidade);
-                                    return;
-                                }
-
-                                // DETECÇÃO DO TIPO DE VENDA (UNIDADE OU FARDO)
-                                let saleType = 'unit'; // Padrão: unidade
-                                
-                                // Verificar se o produto tem configuração de fardo
-                                const hasPackageConfig = product.preco_venda_pacote && 
-                                                       product.fator_conversao && 
-                                                       product.fator_conversao > 1;
-                                
-                                if (hasPackageConfig) {
-                                    // Se o preço unitário da venda é igual ao preço do fardo, é uma venda de fardo
-                                    const packagePrice = Number(product.preco_venda_pacote);
-                                    if (Math.abs(precoUnitario - packagePrice) < 0.01) { // Tolerância para comparação de float
-                                        saleType = 'package';
-                                    }
-                                }
-
-                                const itemRevenueBruto = precoUnitario * quantidade;
-                                let itemDiscountProporcional = 0;
-                                if (saleGrossTotal > 0) {
-                                    itemDiscountProporcional = (itemRevenueBruto / saleGrossTotal) * saleDiscount;
-                                }
-                                const itemRevenueLiquido = itemRevenueBruto - itemDiscountProporcional;
-                                const itemCost = custoUnitario * quantidade;
-                                const itemProfit = itemRevenueLiquido - itemCost; // LUCRO REAL APÓS DESCONTO
-
-                                // Adicionar item à lista de vendas recentes COM DADOS DE DESCONTO
-                                recentSalesItems.push({
-                                    saleId: sale.id,
-                                    saleDate: new Date(sale.created_at),
-                                    productName: product.nome || 'Produto sem nome',
-                                    category: product.categoria || 'Sem Categoria',
-                                    saleType: saleType, // 'unit' ou 'package'
-                                    quantity: quantidade,
-                                    unitPrice: precoUnitario,
-                                    itemRevenueBruto: itemRevenueBruto, // Faturamento bruto do item
-                                    itemRevenueLiquido: itemRevenueLiquido, // Faturamento líquido do item
-                                    itemCost: itemCost,
-                                    itemProfit: itemProfit,
-                                    saleDiscountTotal: saleDiscount, // Desconto total da venda
-                                    itemDiscountProporcional: itemDiscountProporcional // Desconto proporcional do item
-                                });
-                            });
-                        }
-                    });
-                }
-
-                // Ordenar por data (mais recente primeiro) e pegar apenas os 10 primeiros
-                const sortedRecentSales = recentSalesItems
-                    .sort((a, b) => b.saleDate - a.saleDate)
-                    .slice(0, 10);
-
-                console.log('✅ Últimas 10 vendas processadas com tipos e desconto:', sortedRecentSales);
-                return sortedRecentSales;
+                return processedSales;
 
             } catch (error) {
                 console.error('❌ Erro ao buscar últimas vendas:', error);
@@ -1268,11 +960,12 @@
             }
         }
 
+
         // FUNÇÃO ATUALIZADA PARA RENDERIZAR AS ÚLTIMAS VENDAS COM NOVA ORDEM: PREÇO UNIT., DESCONTO, FATURAMENTO
         function renderRecentSales(salesItems) {
             const recentSalesEl = document.getElementById('recent-sales');
             recentSalesEl.innerHTML = '';
-
+            
             if (salesItems.length === 0) {
                 recentSalesEl.innerHTML = `
                     <tr>
@@ -1287,15 +980,17 @@
 
             salesItems.forEach((item) => {
                 const formattedDate = item.saleDate.toLocaleDateString('pt-BR');
-                const formattedTime = item.saleDate.toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
+                const formattedTime = item.saleDate.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
                 });
 
-                const typeBadge = item.saleType === 'package'
+                // Determinar badge de tipo
+                const typeBadge = item.saleType === 'package' 
                     ? '<span class="type-badge-package"><i class="fas fa-boxes"></i>FARDO</span>'
                     : '<span class="type-badge-unit"><i class="fas fa-cube"></i>UNIDADE</span>';
 
+                // Determinar badge de desconto
                 let discountBadge = '';
                 if (item.itemDiscountProporcional > 0) {
                     discountBadge = `<span class="discount-badge"><i class="fas fa-tag"></i> ${formatCurrency(item.itemDiscountProporcional)}</span>`;
@@ -1303,6 +998,7 @@
                     discountBadge = '<span class="text-gray-400 text-xs">Sem desconto</span>';
                 }
 
+                // NOVA ORDEM: PREÇO UNIT., DESCONTO, FATURAMENTO, LUCRO
                 const row = `
                     <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200">
                         <td class="px-6 py-4 whitespace-nowrap">
