@@ -1151,6 +1151,21 @@
         <p id="toast-message" class="font-medium"></p>
     </div>
 
+    <!-- Duplicate Product Modal -->
+    <div id="duplicate-product-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 animate-fade-in">
+        <div id="duplicate-product-modal-content" class="modal-content-modern w-full max-w-md mx-auto opacity-0 scale-95 p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 bg-yellow-100 text-yellow-600 rounded-full mb-4">
+                <i class="fas fa-exclamation-triangle text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Produto Duplicado!</h3>
+            <p id="duplicate-product-message" class="text-sm text-gray-600 my-4"></p>
+            <div class="flex justify-center gap-4 mt-6">
+                <button id="cancel-duplicate-btn" class="btn-secondary-modern">Cancelar</button>
+                <button id="confirm-duplicate-edit-btn" class="btn-primary-modern">Editar Produto Existente</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Receive Product Modal -->
     <div id="receive-product-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 animate-fade-in">
         <div id="receive-product-modal-content" class="modal-content-modern w-full max-w-md mx-auto opacity-0 scale-95 p-6 text-center">
@@ -1551,28 +1566,65 @@
 
             try {
                 // Gerar nome único para o arquivo
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}_${productName.replace(/[^a-zA-Z0-9]/g, '_')}.${fileExt}`;
-                
-                // Fazer upload para o bucket 'product-images'
+                const fileExt = file.name.split(".").pop();
+                const fileName = `produtos/${Date.now()}_${productName.replace(/[^a-zA-Z0-9]/g, "_")}.${fileExt}`;
+                // Fazer upload para o bucket 'imagens-produtos'
                 const { data, error } = await supabaseClient.storage
-                    .from('imagens-produtos')
+                    .from("imagens-produtos")
                     .upload(fileName, file);
 
                 if (error) {
-                    console.error('Erro no upload da imagem:', error);
+                    console.error("Erro no upload da imagem:", error);
                     throw error;
                 }
 
                 // Obter URL pública da imagem
                 const { data: urlData } = supabaseClient.storage
-                    .from('product-images')
+                    .from("imagens-produtos") // Corrigido para 'imagens-produtos'
                     .getPublicUrl(fileName);
 
                 return urlData.publicUrl;
             } catch (error) {
-                console.error('Erro ao fazer upload da imagem:', error);
+                console.error("Erro ao fazer upload da imagem:", error);
                 throw error;
+            }
+        }
+
+        // Função para deletar imagem do Supabase Storage
+        async function deleteImageFromSupabase(imageUrl) {
+            if (!imageUrl) return;
+
+            try {
+                // Extrai o caminho da URL pública
+                const url = new URL(imageUrl);
+                const path = url.pathname; // Ex: /storage/v1/object/public/imagens-produtos/produtos/imagem.jpg
+                
+                // O caminho do arquivo dentro do bucket é a parte após o nome do bucket
+                const bucketName = "imagens-produtos";
+                const bucketPathIndex = path.indexOf(`/${bucketName}/`);
+                
+                if (bucketPathIndex === -1) {
+                    console.error("Nome do bucket não encontrado na URL da imagem");
+                    return;
+                }
+
+                const filePath = path.substring(bucketPathIndex + `/${bucketName}/`.length);
+                const decodedFilePath = decodeURIComponent(filePath);
+
+                // A função remove do Supabase Storage espera o caminho completo do arquivo dentro do bucket
+                // O caminho deve incluir a subpasta 'produtos/'
+                const { error } = await supabaseClient.storage
+                    .from(bucketName)
+                    .remove([decodedFilePath]);
+
+                if (error) {
+                    console.error("Erro ao deletar imagem do storage:", error);
+                    // Não lançar erro, apenas registrar o erro
+                } else {
+                    console.log("Imagem deletada do storage:", decodedFilePath);
+                }
+            } catch (error) {
+                console.error("Erro ao processar URL da imagem para deleção:", error);
             }
         }
 
@@ -1650,9 +1702,15 @@
         const receiveProductModal = document.getElementById('receive-product-modal');
         const receiveProductModalContent = document.getElementById('receive-product-modal-content');
         const receiveProductMessage = document.getElementById('receive-product-message');
-        const receiveQuantityInput = document.getElementById('receive-quantity');
-        const confirmReceiveBtn = document.getElementById('confirm-receive-btn');
-        const cancelReceiveBtn = document.getElementById('cancel-receive-btn');
+        const receiveQuantityInput = document.getElementById("receive-quantity");
+        const confirmReceiveBtn = document.getElementById("confirm-receive-btn");
+        const cancelReceiveBtn = document.getElementById("cancel-receive-btn");
+
+        const duplicateProductModal = document.getElementById("duplicate-product-modal");
+        const duplicateProductModalContent = document.getElementById("duplicate-product-modal-content");
+        const duplicateProductMessage = document.getElementById("duplicate-product-message");
+        const confirmDuplicateEditBtn = document.getElementById("confirm-duplicate-edit-btn");
+        const cancelDuplicateBtn = document.getElementById("cancel-duplicate-btn");
 
         // Event listeners para modais
         cancelProductBtn.addEventListener('click', () => {
@@ -1663,8 +1721,47 @@
             hideModal(deleteModal, deleteModalContent);
         });
 
-        cancelReceiveBtn.addEventListener('click', () => {
+        cancelReceiveBtn.addEventListener("click", () => {
             hideModal(receiveProductModal, receiveProductModalContent);
+        });
+
+        cancelDuplicateBtn.addEventListener("click", () => {
+            hideModal(duplicateProductModal, duplicateProductModalContent);
+        });
+
+        confirmDuplicateEditBtn.addEventListener("click", () => {
+            const productId = confirmDuplicateEditBtn.dataset.productId;
+            const product = allProducts.find(p => p.id === parseInt(productId));
+            if (product) {
+                // Preencher o formulário de produto com os dados do produto existente
+                document.getElementById("modal-title").textContent = "Editar Produto";
+                productForm.dataset.editMode = "true";
+                productForm.dataset.productId = productId;
+
+                document.getElementById("nome").value = product.nome;
+                setSelectedCategory(product.categoria); // Usar a nova função
+                document.getElementById("codigo_sku").value = product.codigo_sku || "";
+                document.getElementById("qtd_estoque").value = product.qtd_estoque;
+                document.getElementById("estoque_minimo").value = product.estoque_minimo;
+                document.getElementById("preco_custo").value = product.preco_custo || "";
+                document.getElementById("preco_venda").value = product.preco_venda;
+                document.getElementById("codigo_sku_pacote").value = product.codigo_sku_pacote || "";
+                document.getElementById("fator_conversao").value = product.fator_conversao || 1;
+                document.getElementById("preco_venda_pacote").value = product.preco_venda_pacote || "";
+
+                // Carregar imagem existente se houver
+                if (product.imagem_url) {
+                    document.getElementById("image-preview").src = product.imagem_url;
+                    document.getElementById("upload-placeholder").classList.add("hidden");
+                    document.getElementById("image-preview-area").classList.remove("hidden");
+                } else {
+                    clearImageSelection();
+                }
+
+                clearAllValidationErrors();
+                hideModal(duplicateProductModal, duplicateProductModalContent);
+                showModal(productModal, productModalContent);
+            }
         });
 
         // Event listener para o formulário de produto
@@ -1690,8 +1787,21 @@
 
             // Validar campos obrigatórios
             if (!nome || !preco_venda) {
-                showToast('Por favor, preencha todos os campos obrigatórios.');
+                showToast("Por favor, preencha todos os campos obrigatórios.");
                 return;
+            }
+
+            // Verificar se já existe um produto com o mesmo nome (apenas para novos produtos)
+            if (!isEditMode) {
+                const existingProductByName = allProducts.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+                if (existingProductByName) {
+                    // Mostrar modal de alerta de produto duplicado
+                    document.getElementById("duplicate-product-message").textContent = `Já existe um produto com o nome "${nome}". Deseja editar o produto existente?`;
+                    document.getElementById("confirm-duplicate-edit-btn").dataset.productId = existingProductByName.id;
+                    hideModal(productModal, productModalContent); // Esconder o modal de produto atual
+                    showModal(duplicateProductModal, duplicateProductModalContent);
+                    return;
+                }
             }
 
             // Validar duplicidade de códigos de barras
@@ -1705,14 +1815,39 @@
 
             try {
                 let imageUrl = null;
+                let oldImageUrl = null;
                 
+                if (isEditMode) {
+                    const existingProduct = allProducts.find(p => p.id === productId);
+                    oldImageUrl = existingProduct?.imagem_url || null;
+                }
+
                 // Fazer upload da imagem se houver uma selecionada
                 if (selectedImageFile) {
                     imageUrl = await uploadImageToSupabase(selectedImageFile, nome);
                 } else if (isEditMode) {
-                    // Manter a imagem existente se estiver editando
+                    // Manter a imagem existente se estiver editando e nenhuma nova imagem foi selecionada
                     const existingProduct = allProducts.find(p => p.id === productId);
                     imageUrl = existingProduct?.imagem_url || null;
+                }
+
+                // Lógica para deletar a imagem antiga do storage ao editar um produto
+                if (isEditMode && oldImageUrl) {
+                    // Cenário 1: Uma nova imagem foi selecionada
+                    if (selectedImageFile) {
+                        // Se a URL da imagem mudou (nova imagem ou imagem diferente), deletar a antiga
+                        if (oldImageUrl !== imageUrl) {
+                            await deleteImageFromSupabase(oldImageUrl);
+                        }
+                    } else { // Cenário 2: Nenhuma nova imagem foi selecionada
+                        // Se a área de preview da imagem está oculta, significa que a imagem foi removida manualmente
+                        if (document.getElementById("image-preview-area").classList.contains("hidden")) {
+                            await deleteImageFromSupabase(oldImageUrl);
+                            imageUrl = null; // Garante que a URL da imagem seja null no banco de dados
+                        } else { // Nenhuma nova imagem selecionada e a área de preview está visível (mantendo a imagem antiga)
+                            // Não faz nada, mantém a imagem antiga
+                        }
+                    }
                 }
 
                 const productData = {
